@@ -4,17 +4,15 @@ This is a tool to work with text stored in cnvrs-text files (Sonic Frontiers, Sh
 ## Usage
 Drag and drop a cnvrs-text file to the executable to extract text to a json file.
 The only important data in the created json is text strings. Everything else is added mainly for context.
-Edit text in that json and then drag and drop it to the executable
-to modify the corresponding cnvrs-text file data (it must also be in the same folder).
+Edit text in that json and then drag and drop it to the executable to modify the corresponding cnvrs-text file data (it must also be in the same folder).
 The modified file will be saved in the "New files" folder.
 
 ## CMD usage
-> CnvrsTextTool filename
+`CnvrsTextTool filename`
 ##
-The tool appends new text to the end of the source (cnvrs-text) file
-and rewrites text pointers, making its size slightly bigger.
+The tool appends new text to the end of the source (cnvrs-text) file and rewrites text pointers, making its size slightly bigger.
+If a provided cnvrs-text file already contains new text segment (marked as NEWTEXT) it will be removed and replaced with newer text.
 It doesn't modify any other data so the speaker info is preserved.
 
 This solution is basically a proof of concept.
-But it allows text modding without losing speaker names in Shadow Generations
-or losing static event animations in Sonic Frontiers.
+But it allows text modding without losing speaker names in Shadow Generations or losing static event animations in Sonic Frontiers.
