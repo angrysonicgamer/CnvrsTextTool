@@ -20,7 +20,7 @@ namespace CnvrsTextTool
             {
                 char c = rawText[i];
                 
-                // Raw text example with multiple attributes: \uE1E0\uFFC8\uC8E6SpeakerColor\u0000\uE141caption_1\u0000something\uE010   \uE141caption_2\u0000
+                // Raw text example with multiple attributes: \uE1E0\uFFC8\uC8E6SpeakerColor\u0000\uE141caption_1\u0000:\uE010   \uE141caption_2\u0000
                 // Not very readable, right?
                 // The following code is basically taken from Puyo Text Editor source code but without xml stuff
                 // I'm just creating more presentable strings for json using kinda xml-like style
@@ -30,7 +30,7 @@ namespace CnvrsTextTool
                     case 0xE000: // color
                         if (c == 0xE010) // color end tag
                         {
-                            builder.Append(colorEndTag);
+                            builder.Append(colorEndTag);                                                    // \uE010 => </color>
                         }
                         else
                         {
@@ -39,7 +39,7 @@ namespace CnvrsTextTool
                             i += 2;
                             int colorNameLength = GetNameLength(c) - 2;
                             string colorName = new string(rawText.ToCharArray(), i, colorNameLength);
-                            builder.Append($"{colorAttribute}{colorName}|{argbColor.ToString("X8")}>");     // example with color end tag: <color:SpeakerColor|FFC8C8E6>something</color>
+                            builder.Append($"{colorAttribute}{colorName}|{argbColor.ToString("X8")}>");     // \uE1E0\uFFC8\uC8E6SpeakerColor\u0000 => <color:SpeakerColor|FFC8C8E6>
                             i += colorNameLength;
                         }
                         break;
@@ -66,7 +66,7 @@ namespace CnvrsTextTool
                 }                
             }
 
-            // And so, that raw string becomes this: <color:SpeakerColor|FFC8C8E6><var:caption_1 />something</color>   <var:caption_2 />
+            // And so, that raw string becomes this: <color:SpeakerColor|FFC8C8E6><var:caption_1 />:</color>   <var:caption_2 />
             // Much easier to read
 
             return builder.ToString();

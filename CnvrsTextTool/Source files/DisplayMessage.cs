@@ -9,7 +9,7 @@
                 "The only important data in the created json is text strings. Everything else is added mainly for context.\n" +
                 "Edit text in that json and then drag and drop it to the executable\n" +
                 "to modify the corresponding cnvrs-text file data (it must also be in the same folder).\n" +
-                "The modified file will be saved in the \"New files\" folder.\n\n" +
+                "The modified file will be saved in the \"New files\" subfolder.\n\n" +
                 "- CMD usage -\nCnvrsTextTool filename\n\n" +
                 "The tool appends new text to the end of the source (cnvrs-text) file\n" +
                 "and rewrites text pointers, making its size slightly bigger.\n" +

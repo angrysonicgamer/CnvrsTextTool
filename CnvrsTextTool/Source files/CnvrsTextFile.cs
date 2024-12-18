@@ -90,14 +90,14 @@ namespace CnvrsTextTool
             for (int i = 0; i < cnvrsData.TextEntries.Count; i++)
             {
                 int textOffsetPosition = entriesBeginPosition + i * CnvrsTextEntry.Size + sizeof(long) * 3;
-                int textLengthPosition = textOffsetPosition + 8;
+                int textLengthPosition = textOffsetPosition + sizeof(long);
                 string rawText = TextAttributesHandler.GetRawString(cnvrsData.TextEntries[i].Text);
 
                 writer.WriteAt(textOffsetPosition, x => x.Write((long)newTextBeginPosition - offsetDifference));
                 writer.WriteAt(textLengthPosition, x => x.Write((long)rawText.Length));
                 writer.WriteAt(newTextBeginPosition, x => x.Write(Encoding.Unicode.GetBytes(rawText)));
 
-                newTextBeginPosition += (cnvrsData.TextEntries[i].Text.Length + 1) * 2;
+                newTextBeginPosition += (cnvrsData.TextEntries[i].Text.Length + 1) * 2;                             // assuming UTF-16 (2 bytes per character + null terminator)
             }
 
             reader.Dispose();
