@@ -6,13 +6,18 @@ namespace CnvrsTextTool
     {
         // BinaryReader
         
+        public static void SetPosition(this BinaryReader reader, long position)
+        {
+            reader.BaseStream.Position = position;
+        }
+        
         public static T ReadAt<T>(this BinaryReader reader, long position, Func<BinaryReader, T> func)
         {
             var origPosition = reader.BaseStream.Position;
 
             if (origPosition != position)
             {
-                reader.BaseStream.Position = position;
+                reader.SetPosition(position);
             }
 
             T value;
@@ -23,7 +28,7 @@ namespace CnvrsTextTool
             }
             finally
             {
-                reader.BaseStream.Position = origPosition;
+                reader.SetPosition(origPosition);
             }
 
             return value;
@@ -31,7 +36,7 @@ namespace CnvrsTextTool
 
         public static string ReadCString(this BinaryReader reader, Encoding encoding)
         {
-            List<byte> textbytes = new List<byte>();
+            var textbytes = new List<byte>();
 
             while (true)
             {
@@ -46,7 +51,7 @@ namespace CnvrsTextTool
         
         public static string ReadUnicodeString(this BinaryReader reader, long count)
         {
-            List<byte> textbytes = new List<byte>();
+            var textbytes = new List<byte>();
 
             for (int i = 0; i < count; i++)
             {
@@ -62,13 +67,18 @@ namespace CnvrsTextTool
 
         // BinaryWriter
 
+        public static void SetPosition(this BinaryWriter writer, long position)
+        {
+            writer.BaseStream.Position = position;
+        }
+
         public static void WriteAt(this BinaryWriter writer, long position, Action<BinaryWriter> func)
         {
             var origPosition = writer.BaseStream.Position;
 
             if (origPosition != position)
             {
-                writer.BaseStream.Position = position;
+                writer.SetPosition(position);
             }
 
             try
@@ -77,7 +87,7 @@ namespace CnvrsTextTool
             }
             finally
             {
-                writer.BaseStream.Position = origPosition;
+                writer.SetPosition(origPosition);
             }
         }
     }

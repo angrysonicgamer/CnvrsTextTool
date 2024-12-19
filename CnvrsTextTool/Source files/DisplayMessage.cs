@@ -44,9 +44,9 @@
             Wait();
         }
 
-        public static void FileModified(string file)
+        public static void FileSaved(string file)
         {
-            Console.WriteLine($"File {file} has been successfully modified and saved in the \"New files\" directory!\n");
+            Console.WriteLine($"File {file} has been successfully modified and saved in the \"New files\" subfolder!\n");
             Wait();
         }
 
