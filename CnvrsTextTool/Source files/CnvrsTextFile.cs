@@ -9,7 +9,7 @@ namespace CnvrsTextTool
         private static readonly int entriesCountOffsetPosition = 0x42;
         private static readonly int languageOffsetPosition = 0x50;
         private static readonly int entriesBeginPosition = 0x60;
-        private static readonly int offsetDifference = 64; // real offset minus value            
+        private static readonly int offsetDifference = 64; // real offset = pointer + this            
 
         public static JsonContents ReadText(string sourceFile)
         {
@@ -26,7 +26,7 @@ namespace CnvrsTextTool
             {
                 reader.BaseStream.Position = entriesBeginPosition + i * CnvrsTextEntry.Size;
 
-                long entryId = reader.ReadInt64();
+                long entryNameHash = reader.ReadInt64();                                    // a hash number calculated from entry name (will ignore)
                 long entryNameOffset = reader.ReadInt64() + offsetDifference;
                 long otherInfoOffset = reader.ReadInt64();                                  // contains another offset for entry name and (in Puyo Puyo and Sonic Frontiers) font and layout info (null in Shadow Generations)
                 long textOffset = reader.ReadInt64() + offsetDifference;
@@ -36,7 +36,7 @@ namespace CnvrsTextTool
                 string entryName = reader.ReadAt(entryNameOffset, x => x.ReadCString(Encoding.UTF8));
                 string rawText = reader.ReadAt(textOffset, x => x.ReadUnicodeString(textLength));
                 string text = TextAttributesHandler.GetPresentableString(rawText);          // handle attributes in more presentable way
-                string? speakerCode = null;
+                string? speaker = null;
 
                 if (puyoTextEditorIgnoresThisOffset != 0)
                 {
@@ -45,14 +45,14 @@ namespace CnvrsTextTool
                     long value1 = reader.ReadInt64();                                       // always 1 (?)
                     long offset1 = reader.ReadInt64() + offsetDifference;                   // points to offset2
                     long offset2 = reader.ReadInt64() + offsetDifference;                   // points to speakerOffset
-                    long speakerOffset = reader.ReadInt64() + offsetDifference;             // points to "Speaker" signature
+                    long speakerSignatureOffset = reader.ReadInt64() + offsetDifference;    // points to "Speaker" signature
                     long value2 = reader.ReadInt64();                                       // always 3 (?)
-                    long speakerCodeOffset = reader.ReadInt64() + offsetDifference;         // points to actual speaker code
+                    long speakerOffset = reader.ReadInt64() + offsetDifference;             // points to actual speaker code
 
-                    speakerCode = reader.ReadAt(speakerCodeOffset, x => x.ReadCString(Encoding.UTF8));
+                    speaker = reader.ReadAt(speakerOffset, x => x.ReadCString(Encoding.UTF8));
                 }
 
-                entries.Add(new CnvrsTextEntry(entryId, entryName, speakerCode, text));
+                entries.Add(new CnvrsTextEntry(entryName, speaker, text));
             }
 
             reader.Dispose();

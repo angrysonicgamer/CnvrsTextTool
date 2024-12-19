@@ -4,18 +4,16 @@ namespace CnvrsTextTool
 {
     public class CnvrsTextEntry
     {
-        public long ID { get; set; }
         public string Name { get; set; }
         public string? Speaker { get; set; }
         public string Text { get; set; }
-        public static int Size => 48;
+        public static int Size => sizeof(long) * 6;
 
         [JsonConstructor]
         public CnvrsTextEntry() { }
 
-        public CnvrsTextEntry(long id, string name, string? speaker, string text)
+        public CnvrsTextEntry(string name, string? speaker, string text)
         {
-            ID = id;
             Name = name;
             Speaker = speaker;
             Text = text;
