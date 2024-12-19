@@ -8,8 +8,7 @@ namespace CnvrsTextTool
         private static readonly int dataSegmentLengthPosition = 0x14;
         private static readonly int entriesCountOffsetPosition = 0x42;
         private static readonly int languageOffsetPosition = 0x50;
-        private static readonly int entriesBeginPosition = 0x60;
-        private static readonly int offsetDifference = 64; // real offset = pointer + this            
+        private static readonly int entriesBeginPosition = 0x60;    
 
         public static JsonContents ReadText(string sourceFile)
         {
@@ -19,40 +18,15 @@ namespace CnvrsTextTool
             var entries = new List<CnvrsTextEntry>();
 
             short entriesCount = reader.ReadAt(entriesCountOffsetPosition, x => x.ReadInt16());
-            long languageOffset = reader.ReadAt(languageOffsetPosition, x => x.ReadInt64()) + offsetDifference;
+            long languageOffset = reader.ReadAt(languageOffsetPosition, x => x.ReadInt64()) + Pointer.OffsetDifference;
             string language = reader.ReadAt(languageOffset, x => x.ReadCString(Encoding.UTF8));
 
             for (int i = 0; i < entriesCount; i++)
             {
                 reader.BaseStream.Position = entriesBeginPosition + i * CnvrsTextEntry.Size;
-
-                long entryNameHash = reader.ReadInt64();                                    // a hash number calculated from entry name (will ignore)
-                long entryNameOffset = reader.ReadInt64() + offsetDifference;
-                long otherInfoOffset = reader.ReadInt64();                                  // contains another offset for entry name and (in Puyo Puyo and Sonic Frontiers) font and layout info (null in Shadow Generations)
-                long textOffset = reader.ReadInt64() + offsetDifference;
-                long textLength = reader.ReadInt64();
-                long puyoTextEditorIgnoresThisOffset = reader.ReadInt64();                  // Shadow Generations have speaker info and likely something else, might be null (for everything but subtitles)
-
-                string entryName = reader.ReadAt(entryNameOffset, x => x.ReadCString(Encoding.UTF8));
-                string rawText = reader.ReadAt(textOffset, x => x.ReadUnicodeString(textLength));
-                string text = TextAttributesHandler.GetPresentableString(rawText);          // handle attributes in more presentable way
-                string? speaker = null;
-
-                if (puyoTextEditorIgnoresThisOffset != 0)
-                {
-                    reader.BaseStream.Position = puyoTextEditorIgnoresThisOffset + offsetDifference;
-
-                    long value1 = reader.ReadInt64();                                       // always 1 (?)
-                    long offset1 = reader.ReadInt64() + offsetDifference;                   // points to offset2
-                    long offset2 = reader.ReadInt64() + offsetDifference;                   // points to speakerOffset
-                    long speakerSignatureOffset = reader.ReadInt64() + offsetDifference;    // points to "Speaker" signature
-                    long value2 = reader.ReadInt64();                                       // always 3 (?)
-                    long speakerOffset = reader.ReadInt64() + offsetDifference;             // points to actual speaker code
-
-                    speaker = reader.ReadAt(speakerOffset, x => x.ReadCString(Encoding.UTF8));
-                }
-
-                entries.Add(new CnvrsTextEntry(entryName, speaker, text));
+                var entry = new CnvrsTextEntry();
+                entry.Read(reader);
+                entries.Add(entry);
             }
 
             reader.Dispose();
@@ -93,7 +67,7 @@ namespace CnvrsTextTool
                 int textLengthPosition = textOffsetPosition + sizeof(long);
                 string rawText = TextAttributesHandler.GetRawString(cnvrsData.TextEntries[i].Text);
 
-                writer.WriteAt(textOffsetPosition, x => x.Write((long)newTextBeginPosition - offsetDifference));
+                writer.WriteAt(textOffsetPosition, x => x.Write((long)newTextBeginPosition - Pointer.OffsetDifference));
                 writer.WriteAt(textLengthPosition, x => x.Write((long)rawText.Length));
                 writer.WriteAt(newTextBeginPosition, x => x.Write(Encoding.Unicode.GetBytes(rawText)));
 
