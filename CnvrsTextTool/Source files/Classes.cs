@@ -12,6 +12,7 @@ namespace CnvrsTextTool
     {
         public string Name { get; set; }
         public string? Speaker { get; set; }
+        public string? SpokenTo { get; set; }
         public string Text { get; set; }
         public static int Size => sizeof(long) * 6;
 
@@ -35,14 +36,31 @@ namespace CnvrsTextTool
             {
                 reader.SetPosition(speakerInfoPtr + Pointer.OffsetDifference);
 
-                long value1 = reader.ReadInt64();                                               // always 1 (?)
-                long ptr1 = reader.ReadInt64();                                                 // points to ptr2
-                long ptr2 = reader.ReadInt64();                                                 // points to "Speaker" signature pointer
-                long speakerSignaturePtr = reader.ReadInt64();                                  // points to "Speaker" signature
-                long value2 = reader.ReadInt64();                                               // always 3 (?)
-                long speakerOffset = reader.ReadInt64() + Pointer.OffsetDifference;             // points to actual speaker name
+                long structTypeProbably = reader.ReadInt64();                                       // 1 or 2 in some Sonic Frontiers files (idk if there may be other values)
 
-                Speaker = reader.ReadAt(speakerOffset, x => x.ReadCString(Encoding.UTF8));
+                if (structTypeProbably == 1)
+                {
+                    long ptr1 = reader.ReadInt64();                                                 // points to ptr2
+                    long ptr2 = reader.ReadInt64();                                                 // points to "Speaker" signature pointer
+                    long speakerSignaturePtr = reader.ReadInt64();                                  // points to "Speaker" signature
+                    long value1 = reader.ReadInt64();                                               // always 3 (?)
+                    long speakerOffset = reader.ReadInt64() + Pointer.OffsetDifference;             // points to actual speaker name
+                    Speaker = reader.ReadAt(speakerOffset, x => x.ReadCString(Encoding.UTF8));
+                }
+                else if (structTypeProbably == 2)
+                {
+                    long ptr1 = reader.ReadInt64();                                                 // points to ptr2
+                    long ptr2 = reader.ReadInt64();                                                 // points to "Speaker" signature pointer
+                    long ptr3 = reader.ReadInt64();                                                 // points to "Spoken To" signature pointer
+                    long speakerSignaturePtr = reader.ReadInt64();                                  // points to "Speaker" signature
+                    long value1 = reader.ReadInt64();                                               // always 3 (?)
+                    long speakerOffset = reader.ReadInt64() + Pointer.OffsetDifference;             // points to actual speaker name
+                    Speaker = reader.ReadAt(speakerOffset, x => x.ReadCString(Encoding.UTF8));
+                    long spokenToSignaturePtr = reader.ReadInt64();                                 // points to "Spoken To" signature
+                    long value2 = reader.ReadInt64();                                               // always 3 (?)
+                    long spokenToOffset = reader.ReadInt64() + Pointer.OffsetDifference;            // points to actual "spoken to" character name
+                    SpokenTo = reader.ReadAt(spokenToOffset, x => x.ReadCString(Encoding.UTF8));
+                }
             }
         }
 
